@@ -24,7 +24,7 @@ export default class Pokedex extends Component {
     }
 
     clear() {
-        this.setState({ search: initialState.search })
+        this.setState({ search: initialState.search, pokemon: initialState.pokemon })
     }
 
     async getPokemon(event) {
@@ -33,6 +33,7 @@ export default class Pokedex extends Component {
             await axios.get(`${baseUrl}/${this.state.search}`).then(async resp => {
                 await this.setState({pokemon: resp.data });
                 await this.showPokemon();
+                await console.log(`Aqui!!!`)
             })
             .catch(error => {
                 console.log(`${this.state.search} não encontrado!`)
@@ -40,79 +41,61 @@ export default class Pokedex extends Component {
         }
     }
 
-    async showPokemon(){
-
-        
-    }
-
-    save() {
-        const user = this.state.user
-        const method = user.id ? 'put' : 'post'
-        const url = user.id ? `${baseUrl}/${user.id}` : baseUrl
-        axios[method](url, user)
-            .then(resp => {
-                const list = this.getUpdatedList(resp.data)
-                this.setState({ user: initialState.user, list })
-            })
-    }
-
-    updateField(event){
-        const user = { ...this.state.user }
-        user[event.target.name] = event.target.value
-        this.setState({ user })
+    showPokemon(){
+        if(Object.keys(this.state.pokemon).length > 0){
+            return (
+                <div className="mt-5 p-3">
+                    <div className="row">
+                        <div className="col-12 col-md-3">
+                            <img class="img-thumbnail" src={this.state.pokemon.sprites.front_default} />
+                            <p>{this.state.pokemon.name}</p>
+                        </div>
+                        <div className="col-12 col-md-3">
+                            
+                        </div>
+                    </div>
+                </div>
+            )
+        }
     }
 
     renderForm() {
         return (
-            <div className="form">
-                <div className="row">
-                    <div className="col-12 col-md-6">
-                        <div className="form-group">
-                            <label>Pokémon</label>
-                            <input type="text" className="form-control"
-                                name="name"
-                                value={this.state.search}
-                                onChange={this.getPokemon}
-                                placeholder="Digite o nome..." />
+            <div className="p-3 mt-3">
+                <div className="form">
+                    <div className="row">
+                        <div className="col-12 col-md-6">
+                            <div className="form-group">
+                                <label>Pokémon</label>
+                                <input type="text" className="form-control"
+                                    name="name"
+                                    value={this.state.search}
+                                    onChange={this.getPokemon}
+                                    placeholder="Digite o nome..." />
+                            </div>
                         </div>
+
                     </div>
 
-                </div>
-
-                <hr />
-                <div className="row">
-                    <div className="col-12 d-flex justify-content-end">
-                        <button className="btn btn-primary"
-                            onClick={e => this.save(e)}>
-                            Salvar
-                        </button>
-
-                        <button className="btn btn-secondary ml-2"
-                            onClick={e => this.clear(e)}>
-                            Cancelar
-                        </button>
+                    <hr />
+                    <div className="row">
+                        <div className="col-12 d-flex justify-content-end">
+                            <button className="btn btn-secondary ml-2"
+                                onClick={e => this.clear(e)}>
+                                Limpar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         )
     }
 
-    load(user){
-        this.setState({ user })
-    }
-
-    remove(user){
-        axios.delete(`${baseUrl}/${user.id}`).then(resp =>{
-            const list = this.getUpdatedList(user, false)
-            this.setState({ list })
-        })
-    }
-
-
     render(){
         return(
             <Main {...headerProps}>
                 {this.renderForm()}
+                {this.showPokemon()}
             </Main>
         )
     }
