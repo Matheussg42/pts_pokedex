@@ -30,10 +30,9 @@ export default class Pokedex extends Component {
     async getPokemon(event) {
         await this.setState({ search: event.target.value, pokemon: initialState.pokemon });
         if(this.state.search.length > 0){
-            await axios.get(`${baseUrl}/${this.state.search}`).then(async resp => {
+            await axios.get(`${baseUrl}/${this.state.search.toString().toLowerCase()}`).then(async resp => {
                 await this.setState({pokemon: resp.data });
                 await this.showPokemon();
-                await console.log(`Aqui!!!`)
             })
             .catch(error => {
                 console.log(`${this.state.search} não encontrado!`)
@@ -46,17 +45,45 @@ export default class Pokedex extends Component {
             return (
                 <div className="mt-5 p-3">
                     <div className="row">
-                        <div className="col-12 col-md-3">
-                            <img class="img-thumbnail" src={this.state.pokemon.sprites.front_default} />
-                            <p>{this.state.pokemon.name}</p>
+                        <div className="col-12 col-md-2">
+                            <img className="img-thumbnail cover-poke" src={this.state.pokemon.sprites.front_default} />
                         </div>
                         <div className="col-12 col-md-3">
-                            
+                            <p><b>Informações</b></p>
+                            <p><b>Id:</b> {this.state.pokemon.id}</p>
+                            <p><b>Nome:</b> {this.state.pokemon.name}</p>
+                            <p><b>Tipo:</b> {this.state.pokemon.types[0].type.name}</p>
+                            <p><b>Weight:</b> {this.state.pokemon.weight}</p>
+                            <p><b>Height:</b> {this.state.pokemon.height}</p>
+                        </div>
+                        <div className="col-12 col-md-3">
+                            <p><b>Stats</b></p>
+                            {this.getStats()}
+                        </div>
+                        <div className="col-12 col-md-3">
+                            <p><b>Habilidades</b></p>
+                            {this.getAbilities()}
                         </div>
                     </div>
                 </div>
             )
         }
+    }
+
+    getStats() {
+        return this.state.pokemon.stats.map(stats => {
+            return (
+                <p className="mb-2"><b>{stats.stat.name}:</b> {stats.base_stat}</p>
+            )
+        })
+    }
+
+    getAbilities() {
+        return this.state.pokemon.abilities.map(abilities => {
+            return (
+                <p className="mb-2"><b>{abilities.ability.name}</b></p>
+            )
+        })
     }
 
     renderForm() {
