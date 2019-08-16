@@ -4,7 +4,7 @@ import React from 'react'
 export default props =>
     <footer className="footer">
         <span>
-            Desenvolvido com <i className="fa fa-heart text-danger"></i> e com <i className="fa fa-coffee"></i> por
+            Developed with <i className="fa fa-heart text-danger"></i> and <i className="fa fa-coffee"></i> by
             <strong> Matheus S. Gomes</strong>
         </span>
     </footer>

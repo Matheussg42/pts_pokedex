@@ -41,3 +41,7 @@ main > div.p-3.mt-3 {
 .arrowPokeList span:hover{
     background: #df3d3a;
 }
+
+.cursor-pointer{
+    cursor: pointer
+}

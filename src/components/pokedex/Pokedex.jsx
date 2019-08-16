@@ -5,10 +5,10 @@ import Main from '../template/Main'
 const headerProps = {
     icon: 'users',
     title: 'Pokédex',
-    subtitle: 'Pesquise pelo Pokémon desejado'
+    subtitle: 'Search your Pokémon!'
 }
 
-const baseUrl = 'https://pokeapi.co/api/v2/pokemon'
+const baseUrl = 'https://pokeapi.co/api/v2'
 const initialState = {
     search: '',
     pokemon: [],
@@ -32,10 +32,10 @@ export default class Pokedex extends Component {
         let searchValues = event.target ? event.target.value : event;
         await this.setState({ search: searchValues, pokemon: initialState.pokemon });
         if(this.state.search.length > 0){
-            await axios.get(`${baseUrl}/${this.state.search.toString().toLowerCase()}`).then(async resp => {
+            await axios.get(`${baseUrl}/pokemon/${this.state.search.toString().toLowerCase()}`).then(async resp => {
                 await this.setState({pokemon: resp.data });
                 await this.showPokemon();
-            })
+            }).catch(error=>{})
         }
     }
 
@@ -45,13 +45,13 @@ export default class Pokedex extends Component {
                 <div className="mt-5 p-3">
                     <div className="row">
                         <div className="col-12 col-md-2">
-                            <img className="img-thumbnail cover-poke" alt="Imagem pokémon" src={this.state.pokemon.sprites.front_default} />
+                            <img className="img-thumbnail cover-poke" alt="pokémon" src={this.state.pokemon.sprites.front_default} />
                         </div>
                         <div className="col-12 col-md-3">
-                            <p><b>Informações</b></p>
+                            <p><b>Info</b></p>
                             <p><b>Id:</b> {this.state.pokemon.id}</p>
-                            <p><b>Nome:</b> {this.state.pokemon.name}</p>
-                            <p><b>Tipo:</b> {this.state.pokemon.types[0].type.name}</p>
+                            <p><b>Name:</b> {this.state.pokemon.name}</p>
+                            <p><b>Type:</b> {this.state.pokemon.types[0].type.name}</p>
                             <p><b>Weight:</b> {this.state.pokemon.weight}</p>
                             <p><b>Height:</b> {this.state.pokemon.height}</p>
                         </div>
@@ -60,7 +60,7 @@ export default class Pokedex extends Component {
                             {this.getStats()}
                         </div>
                         <div className="col-12 col-md-3">
-                            <p><b>Habilidades</b></p>
+                            <p><b>Abilities</b></p>
                             {this.getAbilities()}
                         </div>
                     </div>
@@ -79,24 +79,60 @@ export default class Pokedex extends Component {
     }
 
     getAbilities() {
-        let i = 1;
         return this.state.pokemon.abilities.map(abilities => {
+            let abilityId = abilities.ability.url.split("/");
             return (
-                <p key={i++} className="mb-2"><b>{abilities.ability.name}</b></p>
+                <p key={abilityId[6]} className="mb-2"><b onClick={e => this.getAbilityPokemons(abilityId[6])} className="cursor-pointer">{abilities.ability.name}</b></p>
+            )
+        })
+    }
+
+    async getAbilityPokemons(abilityId){
+        await axios.get(`${baseUrl}/ability/${abilityId}`).then(async resp => {
+            console.log(resp.data)
+            await this.setState({ list: initialState.list, ability: resp.data })
+
+            this.showAbility()
+        }).catch(error=>{})
+    }
+
+    showAbility(){
+        return(
+            <div className="mt-5 p-3">
+                <p><b>{this.state.ability.names[2].name}</b></p>
+
+                <p><b>Effect on opponents: <br /></b>{this.state.ability.effect_entries[0].effect}</p>
+                <p><b>Pokemons who use this ability</b></p>
+                <div className="row">
+                    {this.showAbilityPokemons()}
+                </div>
+            </div>
+        )
+    }
+
+    showAbilityPokemons(){
+        return this.state.ability.pokemon.map(item => {
+            let pokeId = item.pokemon.url.split("/");
+            return (
+                <div key={pokeId[6]} className="col-6 col-md-3 pokeListItem p-0">
+                    <p onClick={e => this.getPokemon(pokeId[6])}>{item.pokemon.name}</p>
+                </div>
             )
         })
     }
 
     async getAll(offsetLimit) {
         await axios.get([offsetLimit]).then(async resp => {
-            await this.setState({ list: initialState.list })
-            await this.setState({ list: resp.data })
+            await this.setState({ 
+                list: resp.data, 
+                ability: initialState.ability,
+                pokemon: Object.entries(this.state.list).length === 0 ? initialState.pokemon : this.state.pokemon
+            })
             await this.showAll()
-        })
+        }).catch(error=>{})
     }
 
     showAll() {
-        console.log(this.state.list.results)
         return(
             <div className="mt-5 p-3">
                 <div className="row">
@@ -118,7 +154,7 @@ export default class Pokedex extends Component {
             return this.state.list.results.map(pokemon => {
                 let pokeId = pokemon.url.split("/");
                 return (
-                    <div key={pokemon.url} className="col-6 col-md-3 pokeListItem p-0">
+                    <div key={pokeId[6]} className="col-6 col-md-3 pokeListItem p-0">
                         <p onClick={e => this.getPokemon(pokeId[6])}>{pokemon.name}</p>
                     </div>
                 )
@@ -127,7 +163,7 @@ export default class Pokedex extends Component {
     }
 
     renderForm() {
-        let urlTodos = `${baseUrl}/?offset=00&limit=40`
+        let urlTodos = `${baseUrl}/pokemon/?offset=00&limit=40`
         return (
             <div className="p-3 mt-3">
                 <div className="form">
@@ -139,7 +175,7 @@ export default class Pokedex extends Component {
                                     name="name"
                                     value={this.state.search}
                                     onChange={this.getPokemon}
-                                    placeholder="Digite o nome..." />
+                                    placeholder="Pokémon..." />
                             </div>
                         </div>
 
@@ -151,12 +187,12 @@ export default class Pokedex extends Component {
                             
                             <button className="btn btn-primary"
                                 onClick={e => this.getAll(urlTodos)}>
-                                Listar Todos
+                                List All
                             </button>
 
                             <button className="btn btn-secondary ml-2"
                                 onClick={e => this.clear()}>
-                                Limpar
+                                Clear
                             </button>
                         </div>
                     </div>
@@ -170,6 +206,7 @@ export default class Pokedex extends Component {
             <Main {...headerProps}>
                 {this.renderForm()}
                 {this.showPokemon()}
+                {this.state.ability !== undefined ? this.showAbility() : ''}
                 {this.showAll()}
             </Main>
         )
