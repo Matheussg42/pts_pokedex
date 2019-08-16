@@ -12,7 +12,8 @@ const baseUrl = 'https://pokeapi.co/api/v2'
 const initialState = {
     search: '',
     pokemon: [],
-    list: []
+    list: [],
+    ability: []
 }
 
 export default class Pokedex extends Component {
@@ -25,7 +26,12 @@ export default class Pokedex extends Component {
     }
 
     clear() {
-        this.setState({ search: initialState.search, pokemon: initialState.pokemon, list: initialState.list })
+        this.setState({ 
+            search: initialState.search, 
+            pokemon: initialState.pokemon, 
+            ability: initialState.ability, 
+            list: initialState.list 
+        })
     }
 
     async getPokemon(event) {
@@ -172,7 +178,7 @@ export default class Pokedex extends Component {
                             <div className="form-group">
                                 <label>Pokémon</label>
                                 <input type="text" className="form-control"
-                                    name="name"
+                                    name="pokemon"
                                     value={this.state.search}
                                     onChange={this.getPokemon}
                                     placeholder="Pokémon..." />
@@ -206,7 +212,7 @@ export default class Pokedex extends Component {
             <Main {...headerProps}>
                 {this.renderForm()}
                 {this.showPokemon()}
-                {this.state.ability !== undefined ? this.showAbility() : ''}
+                {this.state.ability.length !== 0 ? this.showAbility() : ''}
                 {this.showAll()}
             </Main>
         )
